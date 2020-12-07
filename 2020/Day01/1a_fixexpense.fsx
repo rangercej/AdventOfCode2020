@@ -1,7 +1,7 @@
 open System.IO
 
 let lines = seq {
-    use sr = new StreamReader(@"C:\Users\chris\source\repos\AdventOfCode\2020\1a\input.txt")
+    use sr = new StreamReader(@"input.txt")
     while not sr.EndOfStream do
         yield sr.ReadLine() |> int
 }
@@ -13,6 +13,8 @@ let sums = seq {
         [ fst(p); snd(p); fst(p) + snd(p) ]
 } 
 
-let result = sums |> Seq.where (fun x -> x.[2] = 2020) 
+let result = sums |> Seq.find (fun x -> x.[2] = 2020) 
 
-result |> Seq.map (fun x -> x.[0] * x.[1]) |> Seq.toList
+let out = result.[0] * result.[1]
+
+printfn "Product = %A" out
