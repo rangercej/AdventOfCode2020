@@ -4,7 +4,7 @@ open System.IO
 open System.Collections.Generic
 open System.Text.RegularExpressions
 
-// Read file, and merge the multi-line blocks into single lines
+// Read file, and merge the multi-line blocks into single lines, splitting on blank lines
 let lines = [
     use sr = new StreamReader(@"input.txt")
     let input = new List<string>()
@@ -17,7 +17,10 @@ let lines = [
             input.Add(l)
 ]
 
-// Input will be 'key:val key:val key:val'
+// Input will be 'key:val key:val key:val'. Turn into a dictionary of key, val pairs.
+// Note to self: the line "Array.map ((fun x ...) >> (fun y ...)) is the same as
+// two Array.map calls piped together. Optimisation suggested via autocomplete
+// in VSCode.
 let makedict (s: string) =
     s.Split(' ')
     |> Array.map ((fun part -> part.Split(':')) >> (fun kv -> kv.[0], kv.[1]))
@@ -42,7 +45,8 @@ let validateHeight (s:string) =
     else
         false
 
-// Now validate passport properties ad count results
+// Now validate passport properties and count results. We could just count keys,
+// however input could have invalid keys so we explicitly check for named keys.
 let validCount = 
     passports 
     |> List.where (fun pp -> pp.Keys.Count >= 7)
