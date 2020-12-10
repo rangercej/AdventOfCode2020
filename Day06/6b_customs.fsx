@@ -26,9 +26,9 @@ let findIntersect (s:string) =
         |> Set.intersectMany
     
 // Find the intersects for each group, count, and sum for the final answer.
-let intersects = lines |> List.map findIntersect
-let counts = intersects |> List.map Set.count
-
-let total = counts |> Seq.sum
+let total = 
+    lines 
+        |> List.map (findIntersect >> Set.count)
+        |> Seq.sum
 
 printfn "Total answers where all people in group answered yes to the same question = %d" total
