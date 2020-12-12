@@ -11,12 +11,13 @@ let lines = [
 let (|InnerOuterBags|) input =
     // Line format is something like:
     //   {adjective} {colour} "bags" contain {val} {adjective} {colour} "bags" [, ...]
-    let m = Regex.Match(input, "^(\S+ \S+) bags contain (.*)$")
+    let m = Regex.Match(input, "^(\S+ \S+) bags contain (.*)\.$")
     List.tail [ for g in m.Groups -> g.Value ]
 
 let (|InnerBagColour|) input =
-    // Extract the modifier+colour from the string "{val} {adjective} {colour} bags."
-    let m = Regex.Match(input, "^\d+ (\S+ \S+) bags.?$")
+    // Extract the modifier+colour from the string "{val} {adjective} {colour} bags".
+    // Note that 'bags' is singular for one bag, so optional s.
+    let m = Regex.Match(input, "^\d+ (\S+ \S+) bags?$")
     List.tail [ for g in m.Groups -> g.Value ]
 
 let processContainedDef (s:string) =
@@ -51,14 +52,21 @@ let inverseBags =
                                 |> Array.map (fun inner -> inner,fst(def))))
         |> List.filter (fun arr -> arr.Length > 0)
         // At this point we have a list of arrays of tuples. We need to flatten it.
-        |> Array.concat 
+        |> Array.concat
+        |> List.ofArray
 
 // Hurrah! Now we can search for how many ways a "shiny gold" bag can be stored.
-let rec findBags (bagColour:string[], count:int) =
-    let rootContainers = inverseBags |> Array.filter (fun ele -> Array.contains ele bagColour)
-    if rootContainers.Length = 0 then
-        count
+let rec findBags (bagColour:string list, currentBags:string list) =
+    let bagsContainingColour = inverseBags |> List.where (fun ele -> bagColour |> List.contains (fst(ele)))
+    if bagsContainingColour.Length = 0 then
+        currentBags
     else
-        rootContainers |> Array.map (fun ele -> findBags (snd(rootContainers), count + rootContainers.Length))
+        let outerBags = bagsContainingColour |> List.map(fun x -> snd(x))
+        let newCurrent = currentBags @ outerBags
+        findBags (outerBags, newCurrent)
 
-findBags ([|"shiny gold"|], 0)
+let possibleBags = findBags (["shiny gold"], [])
+
+let bagCount = possibleBags |> List.distinct |> List.length
+
+printfn "A shiny gold bag could be in any of %d bags" bagCount
